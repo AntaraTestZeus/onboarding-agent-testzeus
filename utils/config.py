@@ -1,4 +1,6 @@
+# backend/utils/config.py
 from pydantic_settings import BaseSettings
+from pathlib import Path
 
 class Settings(BaseSettings):
     pb_url: str
@@ -7,8 +9,9 @@ class Settings(BaseSettings):
     domain_blocklist: str = "tempmail.com,10minutemail.net,mailinator.com"
     backend_cors_origins: str
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
+    model_config = {
+        "env_file": str(Path(__file__).parent.parent.parent / ".env"),
+        "env_file_encoding": "utf-8"
+    }
 
 settings = Settings()

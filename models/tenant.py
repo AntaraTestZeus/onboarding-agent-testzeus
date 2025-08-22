@@ -9,6 +9,17 @@ class TenantCreate(BaseModel):
     team_size: int
     admin_email: EmailStr
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Acme Corp",
+                "plan": "enterprise",
+                "testing_types": ["web", "api"],
+                "team_size": 25,
+                "admin_email": "alice@acme.com"
+            }
+        }
+
 class TenantResponse(BaseModel):
     id: str
     name: str

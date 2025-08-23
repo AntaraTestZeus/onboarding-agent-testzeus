@@ -4,6 +4,81 @@ from openai import OpenAI
 import os
 import random
 import traceback
+import json
+import asyncio
+from datetime import datetime
+from typing import Optional, List, Dict, Tuple
+import openai
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+import sys
+from pathlib import Path
+
+# Add the new modules to the path
+sys.path.append(str(Path(__file__).parent.parent.parent))
+
+# Import the new modules
+try:
+    from modules.screenshot import capture_screenshot_sync
+    from modules.gpt5_gherkin import GPT5GherkinGenerator
+    from modules.ocr_utils import Qwen2VLOCR
+    from modules.prompts import (
+        GHERKIN_PROMPT, 
+        LOGIN_GHERKIN_PROMPT, 
+        DASHBOARD_GHERKIN_PROMPT,
+        FORM_GHERKIN_PROMPT,
+        ECOMMERCE_GHERKIN_PROMPT
+    )
+    NEW_FEATURES_AVAILABLE = True
+except ImportError as e:
+    print(f"Warning: New features not available: {e}")
+    NEW_FEATURES_AVAILABLE = False
+
+# Add URL validation imports
+import re
+import requests
+from urllib.parse import urlparse, urljoin
+
+def validate_and_extract_url_info(url: str, company_name: str) -> Tuple[bool, str, str, str]:
+    """
+    Validate URL and extract domain + company info for screenshot naming.
+    
+    Args:
+        url: The URL to validate
+        company_name: Company name for organization
+        
+    Returns:
+        Tuple of (is_valid, clean_url, domain, screenshot_name)
+    """
+    try:
+        # Clean and normalize URL
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        
+        # Parse URL
+        parsed = urlparse(url)
+        domain = parsed.netloc
+        
+        if not domain:
+            return False, "", "", "Invalid URL format"
+        
+        # Check if site exists
+        try:
+            response = requests.head(url, timeout=10, allow_redirects=True)
+            if response.status_code >= 400:
+                return False, "", "", f"Site returned error {response.status_code}"
+        except requests.RequestException as e:
+            return False, "", "", f"Site not accessible: {str(e)}"
+        
+        # Generate screenshot name: domain_company_timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        screenshot_name = f"{domain.replace('.', '_')}_{company_name}_{timestamp}"
+        
+        return True, url, domain, screenshot_name
+        
+    except Exception as e:
+        return False, "", "", f"URL validation error: {str(e)}"
+
 
 router = APIRouter(prefix="/v1", tags=["chat"])
 
@@ -36,13 +111,13 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "testzeus_knowledge",
-            "description": "Call this to answer questions about TestZeus using internal docs. Input: the user's question.",
+            "description": "Retrieve information about TestZeus features, benefits, pricing, and how things work",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "query": {
                         "type": "string",
-                        "description": "The user's question about TestZeus"
+                        "description": "The query to search for in TestZeus knowledge base"
                     }
                 },
                 "required": ["query"]
@@ -53,7 +128,7 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "validate_email",
-            "description": "Call this to validate an email address. Input: 'email: user@company.com'",
+            "description": "Validate if a single email address is valid and properly formatted",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -70,13 +145,13 @@ TOOLS = [
         "type": "function",
         "function": {
             "name": "create_tenant_and_team",
-            "description": "Call this to create a tenant and team. Input format:\nadmin_email: ...\nplan: oss|enterprise\nteammate_emails: ...",
+            "description": "Create a new TestZeus tenant and team account",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "input_text": {
                         "type": "string",
-                        "description": "The input text containing admin_email, plan, and teammate_emails"
+                        "description": "Text containing admin_email, plan, and teammate_emails in the format: admin_email: email@domain.com\nplan: oss or enterprise\nteammate_emails: email1@domain.com, email2@domain.com"
                     }
                 },
                 "required": ["input_text"]
@@ -84,6 +159,84 @@ TOOLS = [
         }
     }
 ]
+
+# Add new tools if available
+if NEW_FEATURES_AVAILABLE:
+    TOOLS.extend([
+        {
+            "type": "function",
+            "function": {
+                "name": "capture_website_screenshot",
+                "description": "Capture a screenshot from a website URL for test case generation",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "The website URL to capture"
+                        },
+                        "company_name": {
+                            "type": "string",
+                            "description": "Company name for organizing screenshots"
+                        },
+                        "wait_time": {
+                            "type": "integer",
+                            "description": "Time to wait after page load in milliseconds (default: 3000)",
+                            "default": 3000
+                        }
+                    },
+                    "required": ["url", "company_name"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "generate_gherkin_from_screenshot",
+                "description": "Generate Gherkin test cases from a screenshot using GPT-5 Vision",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "screenshot_path": {
+                            "type": "string",
+                            "description": "Path to the screenshot file"
+                        },
+                        "prompt_type": {
+                            "type": "string",
+                            "description": "Type of prompt to use: general, login, dashboard, form, or ecommerce",
+                            "enum": ["general", "login", "dashboard", "form", "ecommerce"]
+                        },
+                        "company_context": {
+                            "type": "string",
+                            "description": "Additional context about the company or application"
+                        }
+                    },
+                    "required": ["screenshot_path", "prompt_type"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "extract_text_from_screenshot",
+                "description": "Extract text and UI elements from a screenshot using OCR",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "screenshot_path": {
+                            "type": "string",
+                            "description": "Path to the screenshot file"
+                        },
+                        "custom_prompt": {
+                            "type": "string",
+                            "description": "Custom prompt for text extraction (optional)"
+                        }
+                    },
+                    "required": ["screenshot_path"]
+                }
+            }
+        }
+    ])
 
 # --- Tool Implementations ---
 def tool_testzeus_knowledge(query: str) -> str:
@@ -176,6 +329,189 @@ def tool_create_tenant_and_team(input_text: str) -> str:
     except Exception as e:
         print(f"❌ Error in account creation: {str(e)}")
         return f"ERROR: {str(e)}"
+
+# Add new tool implementations after the existing ones
+def tool_capture_website_screenshot(url: str, company_name: str, wait_time: int = 3000) -> str:
+    """Enhanced screenshot capture with URL validation"""
+    try:
+        print(f"🔍 Validating URL: {url}")
+        print(f"🏢 Company: {company_name}")
+        
+        # Validate URL and extract info
+        is_valid, clean_url, domain, screenshot_name = validate_and_extract_url_info(url, company_name)
+        
+        if not is_valid:
+            error_msg = f"❌ **URL Validation Failed**\n\n**Issue**: {clean_url}\n\n**Please provide**:\n- A valid, accessible website URL\n- Correct company name\n\n**Examples of valid URLs**:\n- `https://example.com`\n- `https://app.company.com/login`\n- `https://dashboard.testcorp.com`"
+            print(error_msg)
+            return error_msg
+        
+        print(f"✅ URL validated successfully!")
+        print(f"🌐 Domain: {domain}")
+        print(f"📸 Screenshot name: {screenshot_name}")
+        print(f"⏱️ Wait time: {wait_time}ms")
+        
+        # Capture screenshot
+        screenshot_path, filename = capture_screenshot_sync(clean_url, company_name, wait_time)
+        
+        print(f"✅ Screenshot captured successfully!")
+        print(f"📁 Saved to: {screenshot_path}")
+        print(f"📄 Filename: {filename}")
+        
+        return f"""✅ **Screenshot Captured Successfully!**
+
+📸 **Screenshot Details:**
+- **URL**: {clean_url}
+- **Domain**: {domain}
+- **Company**: {company_name}
+- **File**: {filename}
+- **Path**: {screenshot_path}
+
+🚀 **Next Steps Available:**
+1. **Generate Gherkin test cases** from this screenshot
+2. **Extract text and UI elements** using OCR
+3. **Use for visual testing** and documentation
+
+💡 **Recommendation**: 
+I can now generate comprehensive test cases for this website. What type of functionality would you like me to focus on?
+
+**Prompt Types Available:**
+- `login` - Authentication and login flows
+- `dashboard` - Navigation and data display
+- `form` - Form validation and submission
+- `ecommerce` - Shopping and checkout flows
+- `general` - Overall website functionality
+
+**Example**: "Generate Gherkin test cases for the login functionality using the login prompt type"
+
+Would you like me to proceed with test case generation?"""
+        
+    except Exception as e:
+        error_msg = f"❌ **Screenshot Capture Failed**\n\n**Error**: {str(e)}\n\n**Troubleshooting**:\n- Check if the URL is accessible\n- Verify the company name is correct\n- Try a different wait time if the site loads slowly\n\n**Common Issues**:\n- Site requires authentication\n- Heavy JavaScript applications need longer wait times\n- Some sites block automated access"
+        print(error_msg)
+        return error_msg
+
+def tool_generate_gherkin_from_screenshot(screenshot_path: str, prompt_type: str, company_context: str = "") -> str:
+    """Generate Gherkin test cases from a screenshot"""
+    try:
+        print(f"🤖 Generating Gherkin from screenshot: {screenshot_path}")
+        print(f"📝 Prompt type: {prompt_type}")
+        print(f"🏢 Company context: {company_context}")
+        
+        # Initialize GPT-5 generator
+        generator = GPT5GherkinGenerator()
+        
+        # Select appropriate prompt
+        prompt_map = {
+            "general": GHERKIN_PROMPT,
+            "login": LOGIN_GHERKIN_PROMPT,
+            "dashboard": DASHBOARD_GHERKIN_PROMPT,
+            "form": FORM_GHERKIN_PROMPT,
+            "ecommerce": ECOMMERCE_GHERKIN_PROMPT
+        }
+        
+        prompt = prompt_map.get(prompt_type, GHERKIN_PROMPT)
+        
+        # Generate Gherkin
+        result = generator.generate_gherkin(screenshot_path, prompt, company_context)
+        
+        if result.get("success"):
+            gherkin_content = result["gherkin"]
+            tokens_used = result.get("tokens_used", 0)
+            response_time = result.get("response_time", 0)
+            
+            print(f"✅ Gherkin generated successfully!")
+            print(f"🔢 Tokens used: {tokens_used}")
+            print(f"⏱️ Response time: {response_time:.2f}s")
+            
+            return f"""✅ Gherkin test cases generated successfully!
+
+🤖 **AI Generation Details:**
+- **Model**: GPT-5 Vision
+- **Prompt Type**: {prompt_type}
+- **Tokens Used**: {tokens_used}
+- **Response Time**: {response_time:.2f}s
+
+📋 **Generated Test Cases:**
+```gherkin
+{gherkin_content}
+```
+
+💡 **Usage Tips:**
+- These test cases are ready to use in TestZeus
+- They cover all visible UI elements and functionality
+- You can customize them further based on your needs
+- Use them for automated testing and documentation
+
+Would you like me to help you with anything else related to these test cases?"""
+            
+        else:
+            error_msg = f"❌ Error generating Gherkin: {result.get('error', 'Unknown error')}"
+            print(error_msg)
+            return error_msg
+            
+    except Exception as e:
+        error_msg = f"❌ Error in Gherkin generation: {str(e)}"
+        print(error_msg)
+        return error_msg
+
+def tool_extract_text_from_screenshot(screenshot_path: str, custom_prompt: str = "") -> str:
+    """Extract text and UI elements from a screenshot using OCR"""
+    try:
+        print(f"🔍 Extracting text from screenshot: {screenshot_path}")
+        print(f"📝 Custom prompt: {custom_prompt if custom_prompt else 'Using default prompt'}")
+        
+        # Initialize OCR processor
+        ocr_processor = Qwen2VLOCR()
+        
+        # Extract text
+        result = ocr_processor.extract_text_from_image(screenshot_path, custom_prompt)
+        
+        if result.get("success"):
+            extracted_text = result["extracted_text"]
+            tokens_used = result.get("tokens_used", 0)
+            image_size = result.get("image_size", "Unknown")
+            
+            print(f"✅ Text extraction successful!")
+            print(f"🔢 Tokens used: {tokens_used}")
+            print(f"🖼️ Image size: {image_size}")
+            
+            return f"""✅ Text extraction completed successfully!
+
+🔍 **OCR Details:**
+- **Model**: Qwen2-VL
+- **Tokens Used**: {tokens_used}
+- **Image Size**: {image_size}
+
+📝 **Extracted Content:**
+```
+{extracted_text}
+```
+
+💡 **What This Contains:**
+- All visible text on the screenshot
+- UI element descriptions
+- Navigation elements
+- Form fields and labels
+- Error messages and notifications
+
+🚀 **Next Steps:**
+You can use this extracted text to:
+1. Understand the UI structure
+2. Generate more accurate test cases
+3. Document the application interface
+4. Analyze user experience elements
+
+Would you like me to help you analyze this content or generate test cases?"""
+            
+        else:
+            error_msg = f"❌ Error in text extraction: {result.get('error', 'Unknown error')}"
+            print(error_msg)
+            return error_msg
+            
+    except Exception as e:
+        error_msg = f"❌ Error in OCR processing: {str(e)}"
+        print(error_msg)
+        return error_msg
 
 @router.get("/accounts")
 async def list_accounts():
@@ -329,6 +665,11 @@ You are Hermes, a passionate QA engineer who's been in the testing trenches. You
 - validate_email: ONLY when users want to check if a single email is valid (not during account creation)
 - create_tenant_and_team: When users want to join TestZeus, create an account, or onboard their team
 
+**NEW AI-Powered Testing Tools:**
+- capture_website_screenshot: When users want to capture screenshots from websites for test case generation
+- generate_gherkin_from_screenshot: When users want to generate Gherkin test cases from screenshots using AI
+- extract_text_from_screenshot: When users want to extract text and UI elements from screenshots using OCR
+
 **When Using testzeus_knowledge:**
 - The tool will provide you with structured information from our knowledge base
 - Process this information and present it in a conversational, engaging way
@@ -339,11 +680,48 @@ You are Hermes, a passionate QA engineer who's been in the testing trenches. You
 - Personalize the response based on the user's context (company, role, current situation)
 - If the information is long, summarize the key points and offer to elaborate on specific areas
 
+**When Using AI Testing Tools - AUTONOMOUS WORKFLOW:**
+🚀 **BE PROACTIVE - Don't ask multiple questions!**
+
+1. **URL Collection**: Extract URL and company name from user message
+2. **Automatic Execution**: Run the complete pipeline without asking for confirmation:
+   - Validate URL accessibility
+   - Capture screenshot with smart defaults
+   - Extract text/UI elements via OCR
+   - Generate appropriate Gherkin test cases
+3. **Smart Defaults**: Use intelligent defaults for all settings:
+   - Viewport: Desktop 1920x1080 (or mobile if user specifies)
+   - Wait time: 5-8 seconds for dynamic content
+   - Full-page capture for comprehensive testing
+   - Best prompt type based on website content (ecommerce, login, dashboard, etc.)
+
+**URL Validation Process:**
+- **Wrong URL**: "This site doesn't exist" → Ask for correct URL
+- **Invalid Format**: "Invalid URL format" → Provide examples
+- **Site Unreachable**: "Site not accessible" → Suggest troubleshooting
+- **Success**: Extract domain + company → Generate screenshot name
+
+**When Using AI Testing Tools:**
+- **BE AUTONOMOUS**: Once you have a URL, execute the complete workflow
+- **Smart Prompt Selection**: Choose the best prompt type based on the website:
+  - Ecommerce sites (Amazon, Shopify) → Use ecommerce prompt
+  - Login/authentication pages → Use login prompt
+  - Dashboards/analytics → Use dashboard prompt
+  - Forms/surveys → Use form prompt
+  - General websites → Use general prompt
+- **No Back-and-Forth**: Execute everything in one go and present results
+- **Always guide users through the complete workflow**: URL validation → screenshot → OCR → Gherkin generation
+
 **Conversation Flow:**
 1. Greet users warmly and ask about their testing challenges
 2. Listen to their needs and provide relevant information
 3. When they're ready to onboard, guide them through the process
-4. Always be helpful and encouraging
+4. For AI testing requests, **EXECUTE COMPLETELY**:
+   - Extract URL and company info
+   - Validate and capture screenshot
+   - Generate test cases automatically
+   - Present complete results
+5. Always be helpful and encouraging
 
 **For Account Creation:**
 Users should provide:
@@ -351,7 +729,25 @@ admin_email: [their email]
 plan: oss or enterprise  
 teammate_emails: [comma-separated list, optional]
 
-Keep responses conversational, helpful, and not too long. Build rapport and guide users naturally through the onboarding process.
+**For AI Testing Workflows - AUTONOMOUS EXECUTION:**
+1. **URL Input**: Website URL + Company Name (extract from user message)
+2. **Validation**: Check accessibility and format
+3. **Screenshot Capture**: URL + Company → Screenshot saved (use smart defaults)
+4. **Text Extraction**: Screenshot → OCR text and UI elements
+5. **Test Generation**: Screenshot + Smart Prompt Type → Gherkin test cases
+
+**Key Principle: BE PROACTIVE, NOT REACTIVE**
+- Don't ask "What viewport do you want?" - use smart defaults
+- Don't ask "What prompt type?" - choose based on website content
+- Don't ask "What company name?" - extract from context or use domain
+- Execute the complete workflow and present results
+
+**Error Handling Examples:**
+- "That URL doesn't exist. Can you provide the correct website address?"
+- "The site seems to be down. Let's try a different URL or check back later."
+- "I need both the website URL and your company name to proceed."
+
+Keep responses conversational, helpful, and not too long. Build rapport and guide users naturally through the onboarding process or AI testing workflows. **REMEMBER: Execute workflows automatically, don't ask for confirmation!**
 """
 
         # Call GPT-5 with standard chat completion API (supports tool calling)
@@ -462,6 +858,20 @@ Would you like to see a demo of how we'd test a specific Precursive workflow, or
                         elif tool_name == "create_tenant_and_team":
                             input_text = tool_args.get("input_text", "")
                             result = tool_create_tenant_and_team(input_text)
+                        elif tool_name == "capture_website_screenshot":
+                            url = tool_args.get("url", "")
+                            company_name = tool_args.get("company_name", "")
+                            wait_time = tool_args.get("wait_time", 3000)
+                            result = tool_capture_website_screenshot(url, company_name, wait_time)
+                        elif tool_name == "generate_gherkin_from_screenshot":
+                            screenshot_path = tool_args.get("screenshot_path", "")
+                            prompt_type = tool_args.get("prompt_type", "general")
+                            company_context = tool_args.get("company_context", "")
+                            result = tool_generate_gherkin_from_screenshot(screenshot_path, prompt_type, company_context)
+                        elif tool_name == "extract_text_from_screenshot":
+                            screenshot_path = tool_args.get("screenshot_path", "")
+                            custom_prompt = tool_args.get("custom_prompt", "")
+                            result = tool_extract_text_from_screenshot(screenshot_path, custom_prompt)
                         else:
                             result = "Unknown tool"
 

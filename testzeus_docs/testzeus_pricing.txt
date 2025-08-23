@@ -1,0 +1,62 @@
+# TestZeus Pricing, Plans, and Subscription Information
+
+This document outlines the pricing plans, subscription options, and add-ons for TestZeus. It provides details on self-serve payments and how to upgrade your account.
+
+## Frequently Asked Questions about Pricing
+- Question: What is the Platform Access add-on?
+- Answer: The Platform Access add-on is for an extra user and costs $20 per month.
+
+- Question: How much does the Starter plan cost?
+- Answer: The Starter plan costs $600 per month.
+
+- Question: How can I save money on my plan?
+- Answer: You can get 20% savings on the Starter and Growth plans by choosing to be billed annually.
+
+---
+
+## Platform Access
+- Extra User Add-On
+- Price: **$20 /Month**
+- Billed Annually offers 20% savings.
+- Each extra user can create, edit, and run tests, same as included users.
+
+## Starter Plan
+- Perfect for solo developers or small teams
+- Price: **$600 /Month**
+- Billed Annually offers 20% savings.
+- Includes:
+  - 1200 test scenario runs
+  - Up to 15 parallel runs at a time
+  - 1 User Included
+  - Just $0.60 per extra test run
+  - Standard email / agent support
+- Most popular
+
+## Growth Plan
+- Best for scaling teams needing more parallelism
+- Price: **$1200 /Month**
+- Billed Annually offers 20% savings.
+- Includes:
+  - 2400 test scenario runs
+  - Up to 30 parallel runs at a time
+  - 4 Users Included
+  - Just $0.50 per extra test run
+  - Priority email / agent / human support
+
+## Enterprise Plan
+- Custom-built for large teams & mission-critical testing
+- **Custom Price**
+- Contact Us for details.
+- Includes:
+  - Regional deployments
+  - Custom parallel runs based on requirements
+  - Custom test scenario runs
+  - Fully elastic concurrency
+  - Custom User Included
+  - Volume discounts on per extra test run
+  - Dedicated email / agent / human support
+  - Advanced integrations with your Test Management Systems
+  - Enterprise Security
+  - Custom contracts & invoicing
+
+TestZeus supports self-serve upgrades and payments. Users can manage their subscriptions and billing directly through their account dashboard without needing sales calls. Information on managing upgrades and payments is available within the user portal, typically in a "Billing" or "Subscription" section.

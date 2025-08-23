@@ -1,0 +1,44 @@
+Tags and Parallel Runs in TestZeus
+Exploring Tags and Parallel Runs in TestZeus
+
+This document provides a comprehensive overview of utilizing the tags and parallel runs feature in the TestZeus application. By following these steps, users can effectively manage and execute test cases in parallel, enhancing testing efficiency and organization.
+
+Step 1
+
+Welcome to this guide. Today, we will explore the tags and parallel runs feature in the TestZeus application. On the interface, click on "Tags" located on the left-hand side to navigate to the list of tags that have been previously created.
+
+Step 2
+
+Here, you can input the name of a new tag. Think of a tag as a label, similar to a sticker, which helps you categorize and group test cases together for better management.
+
+Step 3
+
+Why group test cases together? It's simple: grouping aids in not only easier test management but also facilitates parallel runs. Let's say we name our tag "Parallel Runs." After clicking "Create," this new tag will be established, and you can verify its creation by returning to the Tags section.
+
+Step 4
+
+Proceed to the Tests panel, where multiple test cases are displayed. You can filter these cases by the tags that have been created previously.
+
+Step 5
+
+For instance, apply a filter using the "Functional Testing" tag.
+
+Step 6
+
+Once filtered, all test cases tagged with "Functional Testing" will be displayed. You can select these cases collectively using the select box at the top left, which allows you to trigger all selected test cases simultaneously.
+
+Step 7
+
+The TestZeus application will execute these test cases in parallel. By naming the test run, for example, "Prod Smoke Run," and associating a pre-created test environment, you can initiate the execution.
+
+Step 8
+
+In summary, not only can you create and apply tags to test cases, but you can also initiate a parallel run. During the parallel run initiation, the TestZeus application will prompt you for the test run name for this bulk execution and allow you to bind a test environment created earlier to the test run.
+
+Step 9
+
+After clicking "Trigger," the TestZeus application will redirect you to the Test Runs page on the user interface. The selected test cases will begin running in parallel. You can enter the Test Run to observe the execution process in real-time.
+
+Step 10
+
+This concludes today's demonstration. Thank you for following along.

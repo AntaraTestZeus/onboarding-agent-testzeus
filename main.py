@@ -1,30 +1,36 @@
 # backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
-from routers import chatbot, tenants, verify
-from utils.config import settings
+# Load environment variables from .env
+load_dotenv()
+from routers import chatbot
+import os
 
-app = FastAPI(title="TestZeus Onboarding Agent", version="0.1.0")
 
-# CORS Middleware
+app = FastAPI(
+    title="TestZeus Onboarding Agent",
+    description="AI-powered onboarding with GPT-5 and free-form tool calling",
+    version="1.0.0"
+)
+
+# CORS - allow frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.backend_cors_origins.split(","),
+    allow_origins=["http://localhost:8501"],  # Streamlit
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(chatbot.router, prefix="/api/v1", tags=["chat"])
-app.include_router(tenants.router, prefix="/api/v1", tags=["tenants"])
-app.include_router(verify.router, prefix="/api/v1", tags=["verify"])
-
-@app.get("/")
-def read_root():
-    return {"message": "🚀 TestZeus Onboarding Agent is live!"}
+# Include chatbot router
+app.include_router(chatbot.router)
 
 @app.get("/health")
-def health_check():
-    return {"status": "healthy", "pocketbase": settings.pb_url}
+def health():
+    return {"status": "ok", "model": os.getenv("OPENAI_MODEL", "gpt-5")}
+
+# Optional: mount frontend (if using static files)
+# from fastapi.staticfiles import StaticFiles
+# app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")

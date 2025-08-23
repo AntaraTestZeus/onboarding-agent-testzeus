@@ -1,0 +1,27 @@
+Logging into TestZeus and Navigating the Dashboard
+Accessing TestZeus Dashboard via LinkedIn
+
+In this process, you will learn how to log into the Tezius application using LinkedIn credentials and navigate to the dashboard to view recent test case activities.
+
+Step 1
+
+To begin, navigate to the Tezius application login page. You have the option to log in using your email ID and password provided by the Tezius team, or you can opt to log in with LinkedIn by clicking the LinkedIn button located at the bottom right. Upon clicking, a new window will open, possibly requesting certain permissions.
+
+Step 2
+
+If the system requests your LinkedIn credentials, enter your user ID and password, then click on the Sign In button. This action will log you into the Tezius application.
+
+Step 3
+
+After logging in, you will automatically land on the test section. By clicking on the Dashboard button on the left-hand side, you will be able to view a brief overview of the test cases you have executed in the past 30 days.
+
+Step 4
+
+In this example, one test case has been executed with a passing rate of one. By scrolling down, you will also see a distribution of the test runs categorized by their tags. The concept of tags will be explained in more detail in the upcoming video.
+
+Step 5
+
+Thank you for following these steps.
+
+
+######

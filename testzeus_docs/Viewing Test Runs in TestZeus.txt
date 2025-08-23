@@ -1,0 +1,36 @@
+Navigating Test Runs in TestZeus
+
+This document provides a comprehensive overview of how to navigate and understand test run details within the TestZeus application. By following the steps outlined below, users can effectively review test execution data, including actions performed, status updates, and artifacts generated during the test.
+
+Step 1
+
+Start by accessing one of the test runs after executing the test case in the TestZeus application. Click on the first row of the test run displayed.
+
+Step 2
+
+This example pertains to an account creation demo. By selecting the Test Run Details tab, you will be presented with a comprehensive view of all relevant details. These include the specific test feature executed, its status, the execution plan created and run by the agent, a brief video playback of the execution session illustrating all interactions performed by the agent, and additional information.
+
+Step 3
+
+Scroll further down to review the detailed steps undertaken by the agent, complete with all necessary details.
+
+Step 4
+
+For instance, the agent enters the TestZeus account name, appended with a timestamp, into the designated account name field.
+
+Step 5
+
+Selecting a particular step from the left-hand side pane will display the associated artifacts, such as images and videos, on the right-hand side.
+
+Step 6
+
+Clicking on any of these artifacts will open them in the browser.
+
+Step 7
+
+In this scenario, the agent inputs the account name as specified. A small overlay card appears in the top right corner, displaying the URL and other pertinent details from the agent's execution. In the TestZeus application, you can access the trace viewer, powered by Playwright technology, to review the entire execution and observe all actions performed by the agent. Network logs from the execution session are also captured for further analysis.
+
+Step 8
+
+Review all Get, Put, Post, and other REST API calls along with their respective payloads, as well as console and network error logs. These details facilitate debugging of the agent's execution and the reporting of any identified bugs. Thank you.
+

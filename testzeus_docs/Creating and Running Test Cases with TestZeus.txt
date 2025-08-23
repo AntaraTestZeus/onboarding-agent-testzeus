@@ -1,0 +1,63 @@
+Creating and Running Test Cases with TestZeus
+
+This document outlines the process of creating and executing test cases using TestZeus' autonomous AI agents. The process includes naming and setting up a new test, utilizing AI for test automation, and ensuring seamless execution without technical scripting.
+
+Step 1
+
+Navigate to the test screen on TestZeus and click on the "New Test" button. This action will prompt you to enter the name for the new test.
+
+Step 2
+
+Enter "Account Creation Demo" as the name for the new test.
+
+Step 3
+
+Click on the "Create" button to proceed to the Test Detail screen. Here, you can update the test status and attach relevant tags.
+
+Step 4
+
+Attach the "Functional Testing" tag to the test.
+
+Step 5
+
+This tagging allows you to filter all functional testing test cases and execute them collectively.
+
+Step 6
+
+Tags simplify the management of test cases. On the left-hand side, there's a "Small Test" feature.
+
+Step 7
+
+The left panel serves as a notepad where you can input test cases using natural English language.
+
+Step 8
+
+The system, powered by an autonomous AI agent, can interpret test cases written in natural English without the need for locators or coding. Once you write the first test case, the system suggests subsequent test cases. By continuing to write, you guide the AI agent, allowing it to automatically create the next test case.
+
+Step 9
+
+For instance, you can write a test case such as, "When the user searches for the new account." It is advisable to structure test cases in a "Given-When-Then" format, which involves defining the URL or credentials (arrange), performing an action (act), and concluding with assertions (assert).
+
+Step 10
+
+Always conclude your test cases with a "Then" statement, ensuring the agent can complete the testing effectively. This approach, known as vibe testing, utilizes natural English language to test applications.
+
+Step 11
+
+Attach necessary test data and environments, such as the "AGENTFORCE" organization. Once the test case is written, click on the "Live Test" button.
+
+Step 12
+
+You can save and instantly run your test case without downloading or installing anything on your device, as TestZeus provides a browser within the application, where the AI agents will execute the test case.
+
+Step 13
+
+Upon clicking "Live Test," TestZeus opens the Salesforce application in its built-in browser. The AI interacts with the application, executing tasks as per the natural English test case, without requiring any code. The AI identifies UI elements and plans steps accordingly. It recognizes terms like "app launcher" and interacts naturally. The right-side screen is view-only but can be adjusted to fit your viewport.
+
+Step 14
+
+Observe as the AI agent interacts with elements to create a new account based on the instructions. You can write detailed or abstract test cases for standard functionalities, such as logging into the AGENTFORCE URL, entering mandatory details, and saving a new account. The AI will fill out details and perform data validation. The execution timeline and artifacts are accessible on the UI.
+
+Step 15
+
+This section will be revisited in the test run section. The test case has successfully passed, demonstrating the efficiency and simplicity of testing Salesforce using TestZeus agents.

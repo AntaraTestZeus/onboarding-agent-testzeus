@@ -1,0 +1,44 @@
+Test Data Management and AI Context
+Using Test Data in TestZeus
+
+This document outlines the process of creating and managing test data using the TestZeus application. By following these steps, users can efficiently generate test data for various test cases and integrate this data into test case creation and execution.
+
+Step 1
+
+To begin, access the Test Data feature in the TestZeus app. Click on the "Test Data" button located in the left-hand side navigation pane. This action will take you to the Test Data List screen.
+
+Step 2
+
+On the Test Data List screen, you will find a collection of previously created test data. You have the option to filter, view, and create new test data. For this example, we will create a new set of test data for our trial organization.
+
+Step 3
+
+Assign a name to the new test data, such as "Trial OrgUserCredentials."
+
+Step 4
+
+You may choose any name, which can then be identified and used during test creation and execution.
+
+Step 5
+
+After naming the test data, navigate to the next screen where you can update the name, status, and input the test data in the data content section.
+
+Step 6
+
+Enter various forms of test data, such as coupon discounts.
+
+Step 7
+
+Include additional details like phone numbers, JPGs, PNGs, PDFs, or Excel and CSV files. This data will be utilized for testing and will also be integrated into the test case. The TestZeus auto-generation feature will use this data to create new test cases.
+
+Step 8
+
+This is how you can create and utilize test data within TestZeus.
+
+Step 9
+
+In the next tutorial, we will demonstrate how to incorporate this test data into test authoring and execution.
+
+Step 10
+
+Thank you for using TestZeus.

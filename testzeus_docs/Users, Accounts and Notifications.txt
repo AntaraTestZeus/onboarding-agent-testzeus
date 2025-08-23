@@ -1,0 +1,40 @@
+Users, Accounts and Notifications
+Navigating TestZeus Application
+
+This document provides a comprehensive walkthrough of using the TestZeus application, highlighting essential features and functionalities to enhance user experience.
+
+Step 1
+
+Begin by selecting the "Users" tab to access the list of users associated with the TestZeus account.
+
+Step 2
+
+You will now see a comprehensive list of users within this TestZeus account.
+
+Step 3
+
+Select any user from the list to open and edit their details.
+
+Step 4
+
+Proceed to the "Notifications" section to explore further options.
+
+Step 5
+
+Upon executing a test case, notifications will be received for both initiation and completion. Within "Settings," access the "Profiles" tab to modify personal details.
+
+Step 6
+
+In the "Profiles" tab, adjust personal information such as the user's photo and name. Navigate to your tenant or TestZeus account via the "Accounts" tab on the left-hand side.
+
+Step 7
+
+View the usage of your tenant and credits for creating and executing TestZeus Autonomous AI Agents test cases. Customize appearance settings or visit the Help Center for documentation.
+
+Step 8
+
+Utilize the Command+K shortcut or the Search button for swift navigation across various tabs, simplifying the user journey.
+
+Step 9
+
+This concludes today's overview. Thank you for your attention.

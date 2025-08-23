@@ -1,7 +1,0 @@
-https://testzeus.com/
-https://testzeus.com/pricing
-https://testzeus.com/salesforce
-https://testzeus.com/blog
-https://testzeus.com/blog/how-to-test-your-salesforce-appexchange-app-strategy-security-review-and-automation-best-practices
-https://testzeus.com/blog/guide-to-testing-salesforce-agentforce
-https://testzeus.com/blog/7-ways-the-salesforce-summer-25-release-might-break-your-automation-tests
